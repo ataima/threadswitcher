@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   ThreadClient.h
  * Author: angelo
  *
@@ -11,7 +11,8 @@
 
 #include "Thread.h"
 
-class caThreadClient {
+class caThreadClient
+{
 protected:
     caThreadStatus mStatus;
     caThreadMode mMode;
@@ -48,43 +49,53 @@ public:
     void Resume(void);
     void ReqExit(void);
 
-    inline caThreadStatus getStatus(void) {
+    inline caThreadStatus getStatus(void)
+    {
         return mStatus;
     }
 
-    inline void setStatus(caThreadStatus m) {
+    inline void setStatus(caThreadStatus m)
+    {
         mStatus = m;
     }
 
-    inline caThreadMode getMode(void) {
+    inline caThreadMode getMode(void)
+    {
         return mMode;
     }
 
-    inline pthread_t * getThreadId(void) {
+    inline pthread_t * getThreadId(void)
+    {
         return mThid;
     }
 
-    inline const char *getName(void) {
+    inline const char *getName(void)
+    {
         return mName;
     }
 
-    inline int getPriority(void) {
+    inline int getPriority(void)
+    {
         return mPriority;
     }
 
-    inline int getCurPriority(void) {
+    inline int getCurPriority(void)
+    {
         return mCurPriority;
     }
 
-    inline int getTickCount(void) {
+    inline int getTickCount(void)
+    {
         return mTickCount;
     }
 
-    inline int getIndex(void) {
+    inline int getIndex(void)
+    {
         return mIndex;
     }
 
-    inline void updateCurPriority(void) {
+    inline void updateCurPriority(void)
+    {
         mCurPriority--;
         if (mCurPriority < 0)
             mCurPriority = mPriority;

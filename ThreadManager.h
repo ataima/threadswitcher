@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   ThreanManager.h
  * Author: angelo
  *
@@ -20,7 +20,8 @@ typedef std::vector<caThreadClient *> thArray;
 typedef int (*functor_nexttask)(caThreadManager *instance);
 
 class caThreadManager
-: public caThreadClient {
+    : public caThreadClient
+{
 private:
     int last_active;
     thArray clients;
@@ -44,15 +45,17 @@ public:
     void StopAllClients(void);
     void SetSchedulerMode(caSchedulerPriorityMode mode);
 
-    inline void SetUserFunctor(functor_nexttask select) {
+    inline void SetUserFunctor(functor_nexttask select)
+    {
         getnetxtask = select;
 
     }
-    inline static caThreadManager * getInstance(void){
+    inline static caThreadManager * getInstance(void)
+    {
         return instance;
     }
-            
-            
+
+
 };
 
 

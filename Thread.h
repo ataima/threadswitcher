@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   Thread.h
  * Author: angelo
  *
@@ -10,7 +10,8 @@
 
 typedef void * (*functor)(void *);
 
-typedef enum tag_thread_status {
+typedef enum tag_thread_status
+{
     STOPPED,
     WAIT_SIGNAL,
     RUNNING,
@@ -19,14 +20,16 @@ typedef enum tag_thread_status {
     EXITED
 } caThreadStatus;
 
-typedef enum tag_thread_mode {
+typedef enum tag_thread_mode
+{
     WAIT_ALWAYS,
     NO_WAIT,
     WAIT_ONLY_START,
     REQ_EXIT
 } caThreadMode;
 
-typedef enum tag_thread_schedule_mode {
+typedef enum tag_thread_schedule_mode
+{
     ROUND_ROBIN,
     MORE_INCR,
     MODE_USER,

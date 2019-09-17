@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   ThreadScheduler.h
  * Author: angelo
  *
@@ -12,7 +12,8 @@
 
 #include "Thread.h"
 
-class caThreadSimple {
+class caThreadSimple
+{
 private:
     caThreadStatus mStatus;
     pthread_t *mThid;
@@ -30,11 +31,13 @@ public:
     void JoinThread(void);
     void SleepThread(unsigned int delay);
 
-    caThreadStatus getStatus(void) {
+    caThreadStatus getStatus(void)
+    {
         return mStatus;
     }
 
-    pthread_t * getThreadId(void) {
+    pthread_t * getThreadId(void)
+    {
         return mThid;
     }
 public:

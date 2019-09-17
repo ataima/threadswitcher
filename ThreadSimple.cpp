@@ -10,26 +10,32 @@
 #include <errno.h>
 #include <unistd.h>
 
-caThreadSimple::caThreadSimple() {
+caThreadSimple::caThreadSimple()
+{
     mStatus = STOPPED;
     mThid = nullptr;
     reqFunc = nullptr;
     reqParam = nullptr;
 }
 
-caThreadSimple::~caThreadSimple() {
+caThreadSimple::~caThreadSimple()
+{
 
 }
 
-bool caThreadSimple::InitThread(functor entry, void *param) {
+bool caThreadSimple::InitThread(functor entry, void *param)
+{
     int ret = -1;
     mThid = new pthread_t;
-    if (mThid != nullptr) {
+    if (mThid != nullptr)
+    {
         pthread_attr_t tattr;
         ret = pthread_attr_init(&tattr);
-        if (ret == 0 || ret == EBUSY) {
+        if (ret == 0 || ret == EBUSY)
+        {
             ret = pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
-            if (ret == 0) {
+            if (ret == 0)
+            {
                 ret = pthread_create(mThid, &tattr, entry, this);
             }
         }
@@ -40,8 +46,10 @@ bool caThreadSimple::InitThread(functor entry, void *param) {
         return true;
 }
 
-void caThreadSimple::DestroyThread(void) {
-    if (mThid != nullptr) {
+void caThreadSimple::DestroyThread(void)
+{
+    if (mThid != nullptr)
+    {
         pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
         pthread_cancel(*mThid);
         delete mThid;
@@ -49,49 +57,62 @@ void caThreadSimple::DestroyThread(void) {
     }
 }
 
-void caThreadSimple::JoinThread(void) {
-    if (mThid != nullptr) {
+void caThreadSimple::JoinThread(void)
+{
+    if (mThid != nullptr)
+    {
         pthread_join(*mThid, nullptr);
     }
 }
 
-void caThreadSimple::SleepThread(unsigned int delay) {
+void caThreadSimple::SleepThread(unsigned int delay)
+{
     if (delay < 1000)
         usleep(delay * 1000);
-    else {
+    else
+    {
         usleep((delay % 1000)*1000);
         sleep(delay / 1000);
     }
 }
 
-void *caThreadSimple::entry_point(void *param) {
+void *caThreadSimple::entry_point(void *param)
+{
     void * res = nullptr;
     caThreadSimple* instance = static_cast<caThreadSimple*> (param);
-    if (instance != nullptr) {
+    if (instance != nullptr)
+    {
         pthread_cleanup_push(cleanup_point, instance);
-        do {
+        do
+        {
             res = instance->ExecuteClient();
-        } while (res == nullptr);
+        }
+        while (res == nullptr);
         pthread_cleanup_pop(0);
     }
     return res;
 }
 
-void * caThreadSimple::ExecuteClient(void) {
-    if (reqFunc != nullptr) {
+void * caThreadSimple::ExecuteClient(void)
+{
+    if (reqFunc != nullptr)
+    {
         mStatus = RUNNING;
         return reqFunc(reqParam); //reqFunc must return NULLPTR for OK
     }
     return (void *) - 1;
 }
 
-void caThreadSimple::CleanUp(void) {
+void caThreadSimple::CleanUp(void)
+{
     pthread_exit(0);
 }
 
-void caThreadSimple::cleanup_point(void *param) {
+void caThreadSimple::cleanup_point(void *param)
+{
     caThreadSimple* instance = static_cast<caThreadSimple*> (param);
-    if (instance != nullptr) {
+    if (instance != nullptr)
+    {
         instance->CleanUp();
     }
 }

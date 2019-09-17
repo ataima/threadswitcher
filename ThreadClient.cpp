@@ -17,7 +17,8 @@
 
 pthread_mutex_t caThreadClient::mMtx = PTHREAD_MUTEX_INITIALIZER;
 
-caThreadClient::caThreadClient(int priority, int index) {
+caThreadClient::caThreadClient(int priority, int index)
+{
     HERE1();
     mStatus = STOPPED;
     mMode = WAIT_ALWAYS;
@@ -30,17 +31,22 @@ caThreadClient::caThreadClient(int priority, int index) {
     mName[0] = '\0';
 }
 
-caThreadClient::~caThreadClient() {
+caThreadClient::~caThreadClient()
+{
     HERE1();
     pthread_mutex_destroy(&caThreadClient::mMtx);
 }
 
-bool caThreadClient::InitThread(functor func, void *param, const char *name) {
+bool caThreadClient::InitThread(functor func, void *param, const char *name)
+{
     HERE1();
     bool result = false;
-    if (pthread_cond_init(&mCond, NULL) != 0) {
+    if (pthread_cond_init(&mCond, NULL) != 0)
+    {
         std::cerr << "Cannot create cond" << std::endl;
-    } else {
+    }
+    else
+    {
         reqFunc = func;
         reqParam = param;
         result = CreateThread();
@@ -49,16 +55,20 @@ bool caThreadClient::InitThread(functor func, void *param, const char *name) {
     return result;
 }
 
-bool caThreadClient::CreateThread() {
+bool caThreadClient::CreateThread()
+{
     int ret = -1;
     HERE1();
     mThid = new pthread_t;
-    if (mThid != nullptr) {
+    if (mThid != nullptr)
+    {
         pthread_attr_t tattr;
         ret = pthread_attr_init(&tattr);
-        if (ret == 0 || ret == EBUSY) {
+        if (ret == 0 || ret == EBUSY)
+        {
             ret = pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
-            if (ret == 0) {
+            if (ret == 0)
+            {
                 ret = pthread_create(mThid, &tattr, entry_point, this);
             }
         }
@@ -69,9 +79,11 @@ bool caThreadClient::CreateThread() {
         return true;
 }
 
-void caThreadClient::DestroyThread(void) {
+void caThreadClient::DestroyThread(void)
+{
     HERE1();
-    if (mThid != nullptr) {
+    if (mThid != nullptr)
+    {
         pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
         pthread_cancel(*mThid);
         delete mThid;
@@ -79,114 +91,142 @@ void caThreadClient::DestroyThread(void) {
     }
 }
 
-void caThreadClient::JoinThread(void) {
+void caThreadClient::JoinThread(void)
+{
     HERE1();
-    if (mThid != nullptr) {
+    if (mThid != nullptr)
+    {
         pthread_join(*mThid, nullptr);
     }
 }
 
-void caThreadClient::SleepThread(unsigned int delay) {
+void caThreadClient::SleepThread(unsigned int delay)
+{
     HERE1();
     if (delay < 1000)
         usleep(delay * 1000);
-    else {
+    else
+    {
         usleep((delay % 1000)*1000);
         sleep(delay / 1000);
     }
 }
 
-void *caThreadClient::entry_point(void *param) {
+void *caThreadClient::entry_point(void *param)
+{
     HERE();
     void * res = nullptr;
     caThreadClient* instance = static_cast<caThreadClient*> (param);
-    if (instance != nullptr) {
+    if (instance != nullptr)
+    {
         pthread_cleanup_push(cleanup_point, instance);
-        do {
-            if (instance->WaitForSignal() == 0) {
-                if (instance->getMode() == caThreadMode::REQ_EXIT) {
+        do
+        {
+            if (instance->WaitForSignal() == 0)
+            {
+                if (instance->getMode() == caThreadMode::REQ_EXIT)
+                {
                     res = (void *) (-1);
                     break;
-                } else {
+                }
+                else
+                {
                     res = instance->ExecuteClient();
                 }
             }
-        } while (res == nullptr);
+        }
+        while (res == nullptr);
         pthread_cleanup_pop(0);
         instance->setStatus(caThreadStatus::EXITED);
-#if MOREDEBUG    
+#if MOREDEBUG
         std::cerr << "thread " << instance->getName() << " EXITED!" << std::endl;
-#endif                     
+#endif
     }
 
     return res;
 }
 
-int caThreadClient::Lock(void) {
+int caThreadClient::Lock(void)
+{
     HERE1();
     int ret = pthread_mutex_lock(&caThreadClient::mMtx);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         std::cerr << "Cannot lock mutex" << std::endl;
     }
-#if MOREDEBUG    
-    else {
+#if MOREDEBUG
+    else
+    {
         std::cerr << "lock mutex index=" << reqParam << std::endl;
     }
-#endif    
+#endif
     return ret;
 }
 
-int caThreadClient::Unlock(void) {
+int caThreadClient::Unlock(void)
+{
     HERE1();
     int ret = pthread_mutex_unlock(&caThreadClient::mMtx);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         std::cerr << "Cannot unlock mutex" << std::endl;
     }
-#if MOREDEBUG    
-    else {
+#if MOREDEBUG
+    else
+    {
         std::cerr << "unlock mutex index=" << reqParam << std::endl;
     }
-#endif    
+#endif
     return ret;
 }
 
-int caThreadClient::CondWait(void) {
+int caThreadClient::CondWait(void)
+{
     HERE1();
     int ret = pthread_cond_wait(&mCond, &caThreadClient::mMtx);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         std::cerr << "Cannot waiting condition" << std::endl;
     }
-#if MOREDEBUG    
-    else {
+#if MOREDEBUG
+    else
+    {
         std::cerr << "cond wait pass index=" << reqParam << std::endl;
     }
-#endif    
+#endif
     return ret;
 }
 
-int caThreadClient::CondSignal(void) {
+int caThreadClient::CondSignal(void)
+{
     HERE1();
     int ret = pthread_cond_signal(&mCond);
-    if (ret != 0) {
+    if (ret != 0)
+    {
         std::cerr << "Cannot signalling condition" << std::endl;
     }
 #if MOREDEBUG
-    else {
+    else
+    {
         std::cerr << "cond signalling pass index=" << reqParam << std::endl;
     }
-#endif    
+#endif
     return ret;
 }
 
-int caThreadClient::WaitForSignal(void) {
+int caThreadClient::WaitForSignal(void)
+{
     HERE1();
     int res = 0;
-    if (mMode != caThreadMode::NO_WAIT) {
+    if (mMode != caThreadMode::NO_WAIT)
+    {
         res = Lock();
-        if (res == 0) {
+        if (res == 0)
+        {
             mStatus = WAIT_SIGNAL;
             CondWait();
-            if (mMode == caThreadMode::WAIT_ONLY_START) {
+            if (mMode == caThreadMode::WAIT_ONLY_START)
+            {
                 mMode = NO_WAIT;
             }
             mTickCount++;
@@ -196,37 +236,45 @@ int caThreadClient::WaitForSignal(void) {
     return res;
 }
 
-void * caThreadClient::ExecuteClient(void) {
+void * caThreadClient::ExecuteClient(void)
+{
     HERE1();
     void *res = (void *) - 1;
-    if (reqFunc != nullptr) {
+    if (reqFunc != nullptr)
+    {
         mStatus = RUNNING;
         res = reqFunc(reqParam);
     }
     return res;
 }
 
-void caThreadClient::cleanup_point(void *param) {
+void caThreadClient::cleanup_point(void *param)
+{
     HERE();
     caThreadClient* instance = static_cast<caThreadClient*> (param);
-    if (instance != nullptr) {
+    if (instance != nullptr)
+    {
         instance->Unlock();
         instance->JoinThread();
     }
 }
 
-void caThreadClient::Resume(void) {
+void caThreadClient::Resume(void)
+{
     HERE1();
-    if (Lock() == 0) {
+    if (Lock() == 0)
+    {
         if (CondSignal() == 0)
             mStatus = RESUME;
         Unlock();
     }
 }
 
-void caThreadClient::ReqExit(void) {
+void caThreadClient::ReqExit(void)
+{
     HERE1();
-    if (Lock() == 0) {
+    if (Lock() == 0)
+    {
         mMode = caThreadMode::REQ_EXIT;
         if (CondSignal() == 0)
             mStatus = TRY_EXIT;

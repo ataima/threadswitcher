@@ -1,3 +1,15 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+/*
+ * File:   main.cpp
+ * Author: angelo
+ *
+ * Created on 28 marzo 2019, 14.11
+ */
 #include <stdio.h>
 #include <pthread.h>
 #include "Thread.h"
@@ -41,14 +53,22 @@ void * func_client(void *param)
     }
     else
         std::cout << total << " ) >>exec func client id=" << index << " HUH" << std::endl;
-    auto randtime=rand()&0xfff;
-    usleep(100000+randtime);
     return nullptr;
 }
 
 static int curr_task = 0;
 
-
+void * func_scheduler(void *param)
+{
+    void * res = nullptr;
+    caThreadManager *manager = (caThreadManager *) param;
+    if (manager != nullptr)
+    {
+        // std::cout<<"request next task"<<std::endl;
+        manager->NextTask();
+    }
+    return res;
+}
 
 int main(void)
 {
@@ -59,51 +79,21 @@ int main(void)
     {
         sprintf(names, "exec client %d", i);
         counters[i] = 0;
-        manager.AddClient(func_client, (void *) (unsigned long int)i,i, names);
+        manager.AddClient(func_client, (void *) (unsigned long int)i,i,i, names);
     }
-
+    manager.InitThread(func_scheduler, &manager);
     clock_gettime(CLOCK_REALTIME, &start);
-
+    manager.SetSchedulerMode(caSchedulerPriorityMode::MORE_INCR);
     sleep(1);
-    manager.StartClients(6);
-    statusThreads st;
-    do
-    {
-        manager.GetStatus(st);
-        sleep(1);
-    }
-    while(st.clients>st.running);
-    std::cerr<<"ALL THREAD STARTED"<<std::endl;
-    do
-    {
-        manager.GetStatus(st);
-        sleep(1);
-        std::cerr<<"CLIENTS="<<st.clients<<
-                 "  RUN="<<st.running <<
-                 "  STOPPED="<<st.stopped<<std::endl;
-    }
-    while(st.running>st.stopped);
-    std::cerr<<"ALL THREAD COMPLETED"<<std::endl;
-    manager.StopClients();
-    manager.Reset();
-    manager.StartClients(32);
-    do
-    {
-        manager.GetStatus(st);
-        sleep(1);
-    }
-    while(st.clients>st.running);
-    std::cerr<<"ALL THREAD STARTED"<<std::endl;
-    do
-    {
-        manager.GetStatus(st);
-        sleep(1);
-        std::cerr<<"CLIENTS="<<st.clients<<
-                 "  RUN="<<st.running <<
-                 "  STOPPED="<<st.stopped<<std::endl;
-    }
-    while(st.running>st.stopped);
-    std::cerr<<"ALL THREAD COMPLETED"<<std::endl;
+    manager.StartScheduler();
+    sleep(5);
+    manager.StopScheduler();
+    sleep(1);
+    manager.StartScheduler();
+    sleep(5);
+    manager.StopScheduler();
+    manager.StopAllClients();
+    manager.ReqExit();
     mintick = 10000000;
     maxtick = average = 0;
     for (i = 0; i < MAX_CLIENT; i++)
