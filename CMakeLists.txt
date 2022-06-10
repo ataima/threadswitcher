@@ -11,7 +11,7 @@ set(PROJECT_HOME ${CMAKE_SOURCE_DIR} )
 
 include_directories(.)
 
-set (CMAKE_INSTALL_DIR "/bin")
+set (CMAKE_INSTALL_PREFIX "/bin")
  
 #However, the file(GLOB...) allows for wildcard additions:
 file(GLOB SOURCES "./*.cpp")
